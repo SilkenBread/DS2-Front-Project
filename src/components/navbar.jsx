@@ -19,7 +19,7 @@ export const Navbar = () => {
     try {
       const token = Cookies.get('token');
       // Realiza la solicitud de cierre de sesión al host
-      await axios.post('https://ds2-backend-project.onrender.com/logout/', {}, {
+      await axios.post('https://ds2-backend-project.onrender.com/', {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
