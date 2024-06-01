@@ -1,14 +1,18 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import $ from 'jquery';
 import 'datatables.net';
 import 'datatables.net-buttons/js/dataTables.buttons.min';
 import 'datatables.net-buttons/js/buttons.html5.min';
 import 'datatables.net-buttons/js/buttons.print.min';
 import 'datatables.net-buttons/js/buttons.colVis.min';
-import { FaEdit, FaTrash } from 'react-icons/fa'; 
+import EditUserModal from '../components/editUserModal';
+import Swal from 'sweetalert2';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-export const DataTable = () => {
+export const DataTable = ({ users, fetchUsers }) => {
   const tableRef = useRef(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     const dataTable = $(tableRef.current).DataTable({
@@ -33,15 +37,100 @@ export const DataTable = () => {
           className: 'btn-print',
         },
       ],
+      data: users.map(user => [
+        user.id,
+        user.name,
+        user.last_name,
+        user.email,
+        user.phone,
+        user.document,
+        user.groups,
+        null // Para la columna de acciones
+      ]),
+      columns: [
+        { title: "Id" },
+        { title: "Nombres" },
+        { title: "Apellidos" },
+        { title: "Correo" },
+        { title: "Teléfono" },
+        { title: "Documento" },
+        { title: "Grupos" },
+        {
+          title: "Acciones",
+          data: null,
+          render: function (data, type, row) {
+            return `
+              <div class="action-icons">
+                <button class="edit-button" data-id="${row[0]}"><i class="fa fa-edit"></i></button>
+                <button class="delete-button" data-id="${row[0]}"><i class="fa fa-trash"></i></button>
+              </div>
+            `;
+          }
+        }
+      ]
     });
 
-    const searchInput = $(`#${dataTable.table().node().id}`);
-    searchInput.addClass('custom-search-input');
+    $(tableRef.current).on('click', '.edit-button', function() {
+      const userId = $(this).data('id');
+      const user = users.find(u => u.id === userId);
+      setSelectedUser(user);
+    });
+
+    $(tableRef.current).on('click', '.delete-button', function() {
+      const userId = $(this).data('id');
+      handleDelete(userId);
+    });
 
     return () => {
       dataTable.destroy();
     };
-  }, []);
+  }, [users]);
+
+  //ALERTA DE CONFIRMACIÓN - ELIMINACIÓN DE USUARIO.
+  const handleDelete = (userId) => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esto!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminarlo!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteUser(userId);
+      }
+    });
+  };
+
+  //PETICIÓN AL HOST DE ELIMINAR EL USUARIO.
+  const deleteUser = async (userId) => {
+    try {
+      const token = Cookies.get('token');
+      await axios.delete(`https://ds2-backend-project.onrender.com/user/${userId}/`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      fetchUsers();
+      Swal.fire(
+        '¡Eliminado!',
+        'El usuario ha sido eliminado.',
+        'success'
+      );
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      Swal.fire(
+        'Error',
+        'Hubo un error al eliminar el usuario. Por favor, intenta de nuevo más tarde.',
+        'error'
+      );
+    }
+  };
+
+  const handleClose = () => {
+    setSelectedUser(null);
+  };
 
   return (
     <div className="container">
@@ -111,12 +200,30 @@ export const DataTable = () => {
             justify-content: center;
           }
 
-          .action-icons button {
-            background: none;
-            border: none;
+          .action-icons span {
+            margin: 0 5px;
             cursor: pointer;
+          }
+
+          .edit-button {
+            background-color: blue;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
             margin-right: 5px;
-            font-size: 18px;
+          }
+          
+          .delete-button {
+            background-color: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+          }
+          
+          .edit-button i, .delete-button i {
+            color: white;
           }
         `}
       </style>
@@ -124,40 +231,26 @@ export const DataTable = () => {
         <table id="align" className="display nowrap" style={{ width: '100%' }} ref={tableRef}>
           <thead>
             <tr>
-              <th>Identificación</th>
-              <th>Foto</th>
+              <th>Id</th>
               <th>Nombres</th>
-              <th>XXX</th>
-              <th>XXX</th>
+              <th>Apellidos</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>Documento</th>
+              <th>Grupos</th>
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>Tiger Nixon</td>
-              <td>System Architect</td>
-              <td>Edinburgh</td>
-              <td>61</td>
-              <td>2011/04/25</td>
-              <td className="action-icons">
-                <button><FaEdit /></button>
-                <button><FaTrash /></button>
-              </td>
-            </tr>
-            <tr>
-              <td>Garrett Winters</td>
-              <td>Accountant</td>
-              <td>Tokyo</td>
-              <td>63</td>
-              <td>2011/07/25</td>
-              <td className="action-icons">
-                <button><FaEdit /></button>
-                <button><FaTrash /></button>
-              </td>
-            </tr>
-          </tbody>
         </table>
       </div>
+      {selectedUser && (
+        <EditUserModal
+          show={true}
+          handleClose={handleClose}
+          fetchUsers={fetchUsers}
+          userData={selectedUser}
+        />
+      )}
     </div>
   );
 };

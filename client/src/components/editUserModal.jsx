@@ -1,50 +1,57 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import Cookies from 'js-cookie';
 
-const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
-  const [userData, setUserData] = useState({
-    name: '',
-    last_name: '',
+const EditUserModal = ({ show, handleClose, fetchUsers, userData }) => {
+  const [formData, setFormData] = useState({
     email: '',
-    phone: '',
-    document: '',
-    group: '',
-    password: ''
+    phone: ''
   });
 
-  const handleChange = e => {
+  useEffect(() => {
+    if (userData) {
+      setFormData({
+        email: userData.email,
+        phone: userData.phone
+      });
+    }
+  }, [userData]);
+
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserData(prevState => ({
-      ...prevState,
+    setFormData({
+      ...formData,
       [name]: value
-    }));
+    });
   };
 
-  //Petición al host para crear el usuario.
+  //Petición para la edición de un usuario en especifico al host.
   const handleSubmit = async () => {
     try {
       const token = Cookies.get('token');
-      const { password, ...userDataWithoutPassword } = userData;
-      await axios.post('https://ds2-backend-project.onrender.com/user/', userDataWithoutPassword, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      await axios.put(
+        `https://ds2-backend-project.onrender.com/user/${userData.id}/`,
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
-      handleClose();
+      );
       fetchUsers();
+      handleClose();
       Swal.fire({
         icon: 'success',
-        title: 'Éxito',
-        text: 'Usuario registrado exitosamente.',
+        title: 'Usuario actualizado',
+        text: 'El usuario ha sido actualizado correctamente',
       });
     } catch (error) {
-      console.error('Error al registrar usuario:', error);
+      console.error('Error al actualizar usuario:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Hubo un error al registrar el usuario. Por favor, intenta de nuevo.',
+        text: 'Hubo un error al actualizar el usuario. Por favor, intenta de nuevo más tarde.',
       });
     }
   };
@@ -56,7 +63,7 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        <h2 className="modal-title">Añadir Usuario</h2>
+        <h2 className="modal-title">Editar Usuario</h2>
         <hr className="separator" />
         <div className="modal-body">
           <div className="input-group">
@@ -66,8 +73,7 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
               id="name" 
               name="name"
               value={userData.name}
-              onChange={handleChange}
-              placeholder="Ingrese su nombre" 
+              disabled
               className="input-field" 
             />
           </div>
@@ -77,9 +83,8 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
               type="text" 
               id="lastName" 
               name="lastName"
-              value={userData.lastName}
-              onChange={handleChange}
-              placeholder="Ingrese su apellido" 
+              value={userData.last_name}
+              disabled
               className="input-field" 
             />
           </div>
@@ -89,9 +94,8 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
               type="email" 
               id="email" 
               name="email"
-              value={userData.email}
+              value={formData.email}
               onChange={handleChange}
-              placeholder="Ingrese su correo electrónico" 
               className="input-field" 
             />
           </div>
@@ -101,9 +105,8 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
               type="tel" 
               id="phone" 
               name="phone"
-              value={userData.phone}
+              value={formData.phone}
               onChange={handleChange}
-              placeholder="Ingrese su número de teléfono" 
               className="input-field" 
             />
           </div>
@@ -114,51 +117,25 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
               id="document" 
               name="document"
               value={userData.document}
-              onChange={handleChange}
-              placeholder="Ingrese su número de documento" 
+              disabled
               className="input-field" 
             />
           </div>
           <div className="input-group">
-            <label htmlFor="role"><b>Rol</b></label>
+            <label htmlFor="groups"><b>Grupos</b></label>
             <input 
               type="text" 
-              id="role" 
-              name="role"
-              value={userData.role}
-              onChange={handleChange}
-              placeholder="Ingrese el rol del usuario" 
-              className="input-field" 
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="password"><b>Contraseña</b></label>
-            <input 
-              type="password" 
-              id="password" 
-              name="password"
-              value={userData.password}
-              onChange={handleChange}
-              placeholder="Ingrese su contraseña" 
-              className="input-field" 
-            />
-          </div>
-          <div className="input-group">
-            <label htmlFor="confirmPassword"><b>Confirmar Contraseña</b></label>
-            <input 
-              type="password" 
-              id="confirmPassword" 
-              name="confirmPassword"
-              value={userData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirme su contraseña" 
+              id="groups" 
+              name="groups"
+              value={userData.groups}
+              disabled
               className="input-field" 
             />
           </div>
         </div>
         <div className="modal-footer">
           <button className="btn cancel-btn" onClick={handleClose}>Cancelar</button>
-          <button className="btn register-btn" onClick={handleSubmit}>Añadir</button>
+          <button className="btn edit-btn" onClick={handleSubmit}>Actualizar</button>
         </div>
       </div>
       <style jsx>{`
@@ -229,7 +206,7 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
           color: white;
         }
 
-        .register-btn {
+        .edit-btn {
           background: #1877F2;
           color: white;
         }
@@ -238,4 +215,4 @@ const RegisterUserModal = ({ show, handleClose, fetchUsers }) => {
   );
 };
 
-export default RegisterUserModal;
+export default EditUserModal;
