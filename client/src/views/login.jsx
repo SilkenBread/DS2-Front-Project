@@ -3,7 +3,7 @@ import pointsImage from '../assets/pointsImage.jpg';
 import bg from '../assets/bg.jpg';
 import imageLogin from '../assets/imageLogin.png';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import Swal from 'sweetalert2';
@@ -14,7 +14,7 @@ export const Login = () => {
   const [rememberPassword, setRememberPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  //const history = useHistory();
+  const navigate = useNavigate();
 
   useEffect(() => {
     document.title = 'Login';
@@ -36,6 +36,7 @@ export const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  //Petición de inicio de sesión al host.
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -43,14 +44,23 @@ export const Login = () => {
         username,
         password
       });
-      const { token } = response.data;
-      Cookies.set('token', token);
-      console.log('Login successful:', token);
-      // Se redirige al menu de gestión de usuarios después del inicio de sesión exitoso
-      //history.push('/users');
+
+      if (response.status === 200) {
+        const { token } = response.data;
+        //Se recibe el token, se almacena en una cookies.
+        if (token) {
+          Cookies.set('token', token);
+          console.log('Login successful:', token);
+          navigate('/menu/users');
+        } else {
+          throw new Error('No token found in response');
+        }
+      } else {
+        throw new Error('Login failed');
+      }
     } catch (error) {
       console.error('Login error:', error);
-      // Mostrar alerta con SweetAlert2
+      //Mostrar alerta de error.
       Swal.fire({
         icon: 'error',
         title: 'Acceso denegado...',
@@ -72,7 +82,7 @@ export const Login = () => {
       }}
     >
       <div style={{ flex: 1 }}>
-      <h1 style={{ color: '#6C6262', position: 'absolute', left: '20px', top: '20px', display: 'flex', alignItems: 'center' }}>
+        <h1 style={{ color: '#6C6262', position: 'absolute', left: '20px', top: '20px', display: 'flex', alignItems: 'center' }}>
           <img src={pointsImage} alt="Points" style={{ width: '60px', height: '40px', marginLeft: '10px' }} />
           INICIAR SESIÓN
         </h1>     

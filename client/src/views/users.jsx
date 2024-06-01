@@ -3,16 +3,19 @@ import { Navbar } from '../components/navbar';
 import { Title } from '../components/title';
 import { DataTable } from '../components/datatable';
 import { FaUserPlus } from 'react-icons/fa';
-import BtnPDF from '../components/btnPDF';
-import BtnExcel from '../components/btnEXCEL';
 import RegisterUserModal from '../components/registerUserModal';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 
 export const Users = () => {
   const [hovered, setHovered] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    document.title = 'Menu - Users';
+    document.title = 'Gestión de usuarios';
+    fetchUsersFromBackend();
   }, []);
 
   const handleMouseEnter = () => {
@@ -31,6 +34,31 @@ export const Users = () => {
     setShowModal(false);
   };
 
+  //Petición para mostrar los usuarios registrados en el datatable.
+  const fetchUsersFromBackend = async () => {
+    try {
+      const token = Cookies.get('token');
+      const response = await axios.get('https://ds2-backend-project.onrender.com/user/', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error al obtener usuarios:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Hubo un error al obtener los usuarios. Por favor, intenta de nuevo más tarde.',
+      });
+    }
+  };
+
+  const handleAddUser = async () => {
+    // Abre el modal para agregar usuario
+    handleShowModal();
+  };
+
   return (
     <div>
       <Navbar />
@@ -40,7 +68,7 @@ export const Users = () => {
           <button
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
-            onClick={handleShowModal}
+            onClick={handleAddUser}
             style={{
               marginTop: '35px',
               marginLeft: '0px',
@@ -58,17 +86,11 @@ export const Users = () => {
             <FaUserPlus style={{ fontSize: '20px' }} />
           </button>
         </div>
-        <div style={{ position: 'absolute', top: '88px', left: '3px' }}>
-          <BtnExcel />
-        </div>
-        <div style={{ position: 'absolute', top: '88px', left: '100px' }}>
-          <BtnPDF />
-        </div>
         <div style={{ marginTop: '100px' }}>
-          <DataTable />
+          <DataTable users={users} />
         </div>
       </div>
-      <RegisterUserModal show={showModal} handleClose={handleCloseModal} />
+      <RegisterUserModal show={showModal} handleClose={handleCloseModal} fetchUsers={fetchUsersFromBackend} />
     </div>
   );
 };

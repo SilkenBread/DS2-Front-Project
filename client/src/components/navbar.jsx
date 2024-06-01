@@ -1,16 +1,37 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom'; 
+import { Link, useNavigate } from 'react-router-dom';
 import { FaUserCircle, FaSignOutAlt, FaEdit, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [arrowUp, setArrowUp] = useState(false);
   const [highlightedOption, setHighlightedOption] = useState(null);
+  const navigate = useNavigate();
 
   const toggleDropdown = () => {
     setDropdownOpen(prevState => !prevState);
-    setArrowUp(prevState => !prevState); 
+    setArrowUp(prevState => !prevState);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const token = Cookies.get('token');
+      // Realiza la solicitud de cierre de sesión al host
+      await axios.post('https://ds2-backend-project.onrender.com/logout/', {}, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      // Elimina el token de las cookies
+      Cookies.remove('token');
+      console.log('Token eliminado');
+      // Redirige al usuario a la página de inicio de sesión
+      navigate('/login');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
   };
 
   return (
@@ -56,10 +77,9 @@ export const Navbar = () => {
             <FaEdit style={{ marginRight: '10px' }} />
             <span>Editar perfil</span>
           </div>
-          <Link to="/login" className="sub-menu-item" onClick={() => setDropdownOpen(false)}  style={{ textDecoration: 'none' }}> 
           <div
             className="sub-menu-item"
-            onClick={toggleDropdown}
+            onClick={handleLogout}
             onMouseEnter={() => setHighlightedOption('logout')}
             onMouseLeave={() => setHighlightedOption(null)}
             style={{
@@ -73,7 +93,6 @@ export const Navbar = () => {
             <FaSignOutAlt style={{ marginRight: '10px' }} />
             <span>Cerrar sesión</span>
           </div>
-          </Link>
         </div>
       )}
     </div>

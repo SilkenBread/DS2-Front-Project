@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaRegUser } from 'react-icons/fa'; 
 import { FaChevronRight } from 'react-icons/fa'; 
-import { MdOutlineInventory } from 'react-icons/md'; 
 import iconSB from '../assets/iconSB.png';
 import { Link } from 'react-router-dom'; 
 
@@ -46,13 +45,6 @@ const Sidebar = () => {
             <FaRegUser className={selectedModule === 'users' ? 'icon-active' : ''} />
             <span className={selectedModule === 'users' ? 'text-active' : ''}>Usuarios</span>
             <FaChevronRight className={`chevron-icon ${selectedModule === 'users' ? 'icon-active' : ''}`} />
-          </Link>
-        </li>
-        <li className={`sidebar-item ${isActive('inventory')}`} onClick={() => handleModuleClick('inventory')}>
-          <Link to="/menu/inventory" className="menu-link">
-            <MdOutlineInventory className={selectedModule === 'inventory' ? 'icon-active' : ''} />
-            <span className={selectedModule === 'inventory' ? 'text-active' : ''}>Inventarios</span>
-            <FaChevronRight className={`chevron-icon ${selectedModule === 'inventory' ? 'icon-active' : ''}`} />
           </Link>
         </li>
       </ul>
