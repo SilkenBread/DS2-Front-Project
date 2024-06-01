@@ -3,9 +3,13 @@ import { Navbar } from '../components/navbar';
 import { Title } from '../components/title';
 import { DataTable } from '../components/datatable';
 import { FaUserPlus } from 'react-icons/fa';
+import BtnPDF from '../components/btnPDF';
+import BtnExcel from '../components/btnEXCEL';
+import RegisterUserModal from '../components/registerUserModal';
 
 export const Users = () => {
   const [hovered, setHovered] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     document.title = 'Menu - Users';
@@ -19,6 +23,14 @@ export const Users = () => {
     setHovered(false);
   };
 
+  const handleShowModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   return (
     <div>
       <Navbar />
@@ -28,6 +40,7 @@ export const Users = () => {
           <button
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
+            onClick={handleShowModal}
             style={{
               marginTop: '35px',
               marginLeft: '0px',
@@ -45,10 +58,17 @@ export const Users = () => {
             <FaUserPlus style={{ fontSize: '20px' }} />
           </button>
         </div>
+        <div style={{ position: 'absolute', top: '88px', left: '3px' }}>
+          <BtnExcel />
+        </div>
+        <div style={{ position: 'absolute', top: '88px', left: '100px' }}>
+          <BtnPDF />
+        </div>
         <div style={{ marginTop: '100px' }}>
           <DataTable />
         </div>
       </div>
+      <RegisterUserModal show={showModal} handleClose={handleCloseModal} />
     </div>
   );
 };

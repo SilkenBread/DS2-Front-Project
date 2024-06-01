@@ -4,12 +4,17 @@ import bg from '../assets/bg.jpg';
 import imageLogin from '../assets/imageLogin.png';
 import { FaUser, FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import Swal from 'sweetalert2';
 
 export const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rememberPassword, setRememberPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  //const history = useHistory();
 
   useEffect(() => {
     document.title = 'Login';
@@ -29,6 +34,29 @@ export const Login = () => {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('https://ds2-backend-project.onrender.com/login/', {
+        username,
+        password
+      });
+      const { token } = response.data;
+      Cookies.set('token', token);
+      console.log('Login successful:', token);
+      // Se redirige al menu de gestión de usuarios después del inicio de sesión exitoso
+      //history.push('/users');
+    } catch (error) {
+      console.error('Login error:', error);
+      // Mostrar alerta con SweetAlert2
+      Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado...',
+        text: 'Credenciales incorrectas',
+      });
+    }
   };
 
   return (
@@ -62,7 +90,7 @@ export const Login = () => {
           }}
         >
           <h3 style={{ marginBottom: '20px', fontSize: '40px', fontWeight: 'bold', marginTop: '-30px'}}>¡Bienvenidos!</h3>
-          <form style={{ width: '100%', marginTop: '110px'}}>
+          <form onSubmit={handleLogin} style={{ width: '100%', marginTop: '110px'}}>
             <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'center' }}>
               <FaUser style={{ marginRight: '10px', fontSize: '24px', color: '#ccc' }} />
               <input
@@ -129,6 +157,7 @@ export const Login = () => {
               >
               Iniciar Sesión
             </button>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
           </form>
           <Link to="/ResetPassword" style={{ textDecoration: 'none' }}>
             <p style={{ color: '#1877F2', marginTop: '-11px', fontSize: '18px' }}>¿Olvidaste tu contraseña?</p>
