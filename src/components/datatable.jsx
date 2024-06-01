@@ -5,7 +5,7 @@ import 'datatables.net-buttons/js/dataTables.buttons.min';
 import 'datatables.net-buttons/js/buttons.html5.min';
 import 'datatables.net-buttons/js/buttons.print.min';
 import 'datatables.net-buttons/js/buttons.colVis.min';
-import EditUserModal from '../components/editUserModal';
+import EditUserModal from './editUserModal';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import Cookies from 'js-cookie';
