@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "sonar": "sonar-scanner",
     "build": "vite build",
+    "deploy": "vercel --prod",
+    "sonar": "sonar-scanner",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
@@ -32,6 +33,7 @@
     "react-router-dom": "^6.22.3",
     "react-toastify": "^10.0.5",
     "sweetalert2": "^11.10.7",
+    "vercel": "^34.2.4",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
